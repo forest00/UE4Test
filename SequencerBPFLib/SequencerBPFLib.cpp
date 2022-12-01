@@ -25,6 +25,7 @@ UMovieSceneTrack* USequencerBPFLib::FindTrackWithGUID(UMovieSceneSequence* Seque
 
 UMovieSceneTrack* USequencerBPFLib::FindTrack(UMovieSceneSequence* Sequencer, TSubclassOf<UMovieSceneTrack> TrackClass, FText TrackName)
 {
+#if WITH_EDITORONLY_DATA
 	if (Sequencer == nullptr || Sequencer->GetMovieScene() == nullptr) { return nullptr; }
 
 	TArray<UMovieSceneTrack*> Tracks = Sequencer->GetMovieScene()->GetMasterTracks();
@@ -38,6 +39,7 @@ UMovieSceneTrack* USequencerBPFLib::FindTrack(UMovieSceneSequence* Sequencer, TS
 			}
 		}
 	}
+#endif
 
 	return nullptr;
 }
