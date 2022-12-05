@@ -3,4 +3,6 @@ PublicDependencyModuleNames.AddRange(new string[]
 // ...
     "MovieScene",
     "MovieSceneTracks",
+    "Sequencer",
+    "SequencerScripting",
 });
