@@ -5,6 +5,14 @@
 #include "CoreMinimal.h"
 #include "Math/Range.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Evaluation/MovieSceneCompletionMode.h"
+#include "Evaluation/Blending/MovieSceneBlendType.h"
+#include "Misc/FrameNumber.h"
+#include "Math/RangeBound.h"
+#include "Misc/QualifiedFrameTime.h"
+#include "Misc/Optional.h"
+#include "UObject/StructOnScope.h"
+#include "SequencerScriptingRange.h"
 #include "SequencerBPFLib.generated.h"
 
 class UMovieScene;
@@ -92,4 +100,55 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static void GetChannelKeyTimes(UMovieSceneSection* Section, int32 ChannelIndex, FInt32Range WithinRange, TArray<int32>& OutKeyTimes);
 
+	UFUNCTION(BlueprintCallable)
+	void GetAllKeySeconds(UMovieSceneSection* Section, FFrameRate FrameRate, TArray<float>& OutKeySeconds);
+
+	UFUNCTION(BlueprintCallable)
+	static void GetKeySeconds(UMovieSceneSection* Section, FSequencerScriptingRange WithinRange, FFrameRate FrameRate, TArray<float>& OutKeySeconds);
+
+	UFUNCTION(BlueprintCallable)
+	static bool IsReadOnly(const UMovieSceneSection* Section);
+
+	UFUNCTION(BlueprintCallable)
+	static FSequencerScriptingRange GetRange(const UMovieSceneSection* Section, FFrameRate FrameRate);
+
+	UFUNCTION(BlueprintCallable)
+	static FSequencerScriptingRange GetTrueRange(const UMovieSceneSection* Section, FFrameRate FrameRate);
+
+	UFUNCTION(BlueprintCallable)
+	static bool HasStartFrame(const UMovieSceneSection* Section);
+	UFUNCTION(BlueprintCallable)
+	static bool HasEndFrame(const UMovieSceneSection* Section);
+	UFUNCTION(BlueprintCallable)
+	static FFrameNumber GetInclusiveStartFrame(const UMovieSceneSection* Section);
+	UFUNCTION(BlueprintCallable)
+	static FFrameNumber GetExclusiveEndFrame(const UMovieSceneSection* Section);
+	//UFUNCTION(BlueprintCallable)
+	//static void SetStartFrame(UMovieSceneSection* Section, FSequencerScriptingRange NewStartFrame, FFrameRate FrameRate);
+	//UFUNCTION(BlueprintCallable)
+	//static void SetEndFrame(UMovieSceneSection* Section, FSequencerScriptingRange NewEndFrame, FFrameRate FrameRate);
+	UFUNCTION(BlueprintCallable)
+	static bool IsTimeWithinSection(const UMovieSceneSection* Section, FFrameNumber Position);
+	//UFUNCTION(BlueprintCallable)
+	//static FSequencerScriptingRange GetAutoSizeRange(const UMovieSceneSection* Section, FFrameRate FrameRate);
+	UFUNCTION(BlueprintPure)
+	static EMovieSceneCompletionMode GetCompletionMode(const UMovieSceneSection* Section);
+	UFUNCTION(BlueprintCallable)
+	static void SetCompletionMode(UMovieSceneSection* Section, EMovieSceneCompletionMode InCompletionMode);
+	UFUNCTION(BlueprintPure)
+	static FOptionalMovieSceneBlendType GetBlendType(const UMovieSceneSection* Section);
+	UFUNCTION(BlueprintCallable)
+	static void SetBlendType(UMovieSceneSection* Section, EMovieSceneBlendType InBlendType);
+	UFUNCTION(BlueprintCallable)
+	static void GetSupportedBlendTypes(const UMovieSceneSection* Section, TArray<EMovieSceneBlendType>& SupportedBlendTypes);
+	UFUNCTION(BlueprintCallable)
+	static void MoveSection(UMovieSceneSection* Section, FFrameNumber DeltaTime);
+	//UFUNCTION(BlueprintCallable)
+	//static FSequencerScriptingRange ComputeEffectiveRange(UMovieSceneSection* Section);
+	UFUNCTION(BlueprintCallable)
+	static UMovieSceneSection* SplitSection(UMovieSceneSection* Section, FQualifiedFrameTime SplitTime, bool bDeleteKeys);
+	UFUNCTION(BlueprintCallable)
+	static void TrimSection(UMovieSceneSection* Section, FQualifiedFrameTime TrimTime, bool bTrimLeft, bool bDeleteKeys);
+	UFUNCTION(BlueprintCallable)
+	static void GetSnapTimes(const UMovieSceneSection* Section, TArray<FFrameNumber>& OutSnapTimes, bool bGetSectionBorders);
 };

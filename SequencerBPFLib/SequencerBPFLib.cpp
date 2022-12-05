@@ -207,16 +207,206 @@ void UMovieSceneSectionBPFLib::GetChannelKeyTimes(UMovieSceneSection* Section, i
 
 	FMovieSceneChannelProxy& ChannelProxy = Section->GetChannelProxy();
 	FMovieSceneChannel* Channel = ChannelProxy.GetChannel<FMovieSceneEventChannel>(ChannelIndex);
-	TRange<FFrameNumber> WithinRangeF = TRange<FFrameNumber>(FFrameNumber(WithinRange.GetLowerBoundValue()), FFrameNumber(WithinRange.GetUpperBoundValue()));
-	TArray<FFrameNumber> OutKeyTimesF;
-	TArray<FKeyHandle> OutKeyHandlesF;
+	TRange<FFrameNumber> WithinRangeFrame = TRange<FFrameNumber>(FFrameNumber(WithinRange.GetLowerBoundValue()), FFrameNumber(WithinRange.GetUpperBoundValue()));
+	TArray<FFrameNumber> OutKeyTimesFrame;
+	TArray<FKeyHandle> OutKeyHandlesFrame;
 	OutKeyTimes.Reset();
 	if (Channel != nullptr)
 	{
-		Channel->GetKeys(WithinRangeF, &OutKeyTimesF, &OutKeyHandlesF);
-		for (auto i = OutKeyTimesF.CreateConstIterator(); i; i++)
+		Channel->GetKeys(WithinRangeFrame, &OutKeyTimesFrame, &OutKeyHandlesFrame);
+		for (auto i = OutKeyTimesFrame.CreateConstIterator(); i; i++)
 		{
 			OutKeyTimes.Add(i->Value);
 		}
 	}
+}
+
+void UMovieSceneSectionBPFLib::GetAllKeySeconds(UMovieSceneSection* Section, FFrameRate FrameRate, TArray<float>& OutKeySeconds)
+{
+	//	FSequencerScriptingRange Range = FSequencerScriptingRange::FromNative(Section->GetRange(), FrameRate);
+	//GetKeySeconds(Section, Range, FrameRate, OutKeySeconds);
+}
+
+void UMovieSceneSectionBPFLib::GetKeySeconds(UMovieSceneSection* Section, FSequencerScriptingRange WithinRange, FFrameRate FrameRate, TArray<float>& OutKeySeconds)
+{
+	if (Section == nullptr) { return; }
+
+	FMovieSceneChannel* Channel = GetFirstChannel(Section);
+	if (Channel != nullptr)
+	{
+		const float ValueFix = 1.0f / 800.0f / float(FrameRate.AsFrameNumber(1).Value);
+		TRange<FFrameNumber> WithinRangeFrame = WithinRange.ToNative(FrameRate);
+		TArray<FFrameNumber> OutKeyTimesFrame;
+		TArray<FKeyHandle> OutKeyHandlesFrame;
+		OutKeySeconds.Reset();
+		if (Channel != nullptr)
+		{
+			Channel->GetKeys(WithinRangeFrame, &OutKeyTimesFrame, &OutKeyHandlesFrame);
+			for (auto i = OutKeyTimesFrame.CreateConstIterator(); i; i++)
+			{
+				OutKeySeconds.Add(i->Value * ValueFix);
+			}
+		}
+	}
+}
+
+bool UMovieSceneSectionBPFLib::IsReadOnly(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return false; }
+
+	return Section->IsReadOnly();
+}
+
+FSequencerScriptingRange UMovieSceneSectionBPFLib::GetRange(const UMovieSceneSection* Section, FFrameRate FrameRate)
+{
+	if (Section == nullptr) { TRange<FFrameNumber> Range = TRange<FFrameNumber>(0, 0); return FSequencerScriptingRange::FromNative(Range, FrameRate); }
+
+	return FSequencerScriptingRange::FromNative(Section->GetRange(), FrameRate);
+}
+
+FSequencerScriptingRange UMovieSceneSectionBPFLib::GetTrueRange(const UMovieSceneSection* Section, FFrameRate FrameRate)
+{
+	if (Section == nullptr) { TRange<FFrameNumber> Range = TRange<FFrameNumber>(0, 0); return FSequencerScriptingRange::FromNative(Range, FrameRate); }
+
+	return FSequencerScriptingRange::FromNative(Section->GetTrueRange(), FrameRate);
+}
+
+bool UMovieSceneSectionBPFLib::HasStartFrame(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return false; }
+
+	return Section->HasStartFrame();
+}
+
+bool UMovieSceneSectionBPFLib::HasEndFrame(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return false; }
+
+	return Section->HasStartFrame();
+}
+
+FFrameNumber UMovieSceneSectionBPFLib::GetInclusiveStartFrame(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return 0; }
+
+	return Section->GetInclusiveStartFrame();
+}
+
+FFrameNumber UMovieSceneSectionBPFLib::GetExclusiveEndFrame(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return 0; }
+
+	return Section->GetExclusiveEndFrame();
+}
+
+//void UMovieSceneSectionBPFLib::SetStartFrame(UMovieSceneSection* Section, FSequencerScriptingRange NewStartFrame, FFrameRate FrameRate)
+//{
+//	if (Section == nullptr) { return; }
+//
+//	return Section->SetStartFrame(NewStartFrame.ToNative(FrameRate));
+//}
+//
+//void UMovieSceneSectionBPFLib::SetEndFrame(UMovieSceneSection* Section, FSequencerScriptingRange NewEndFrame, FFrameRate FrameRate)
+//{
+//	if (Section == nullptr) { return; }
+//
+//	return Section->SetEndFrame(NewEndFrame.ToNative(FrameRate));
+//}
+
+bool UMovieSceneSectionBPFLib::IsTimeWithinSection(const UMovieSceneSection* Section, FFrameNumber Position)
+{
+	if (Section == nullptr) { return false; }
+
+	return Section->IsTimeWithinSection(Position);
+}
+
+//FSequencerScriptingRange UMovieSceneSectionBPFLib::GetAutoSizeRange(const UMovieSceneSection* Section, FFrameRate FrameRate)
+//{
+//	if (Section == nullptr) { TRange<FFrameNumber> Range = TRange<FFrameNumber>(0, 0); return FSequencerScriptingRange::FromNative(Range, FrameRate); }
+//
+//	return FSequencerScriptingRange::FromNative(Section->GetAutoSizeRange(), FrameRate);
+//}
+
+EMovieSceneCompletionMode UMovieSceneSectionBPFLib::GetCompletionMode(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return EMovieSceneCompletionMode::ProjectDefault; }
+
+	return Section->GetCompletionMode();
+}
+
+void UMovieSceneSectionBPFLib::SetCompletionMode(UMovieSceneSection* Section, EMovieSceneCompletionMode InCompletionMode)
+{
+	if (Section == nullptr) { return; }
+
+	return Section->SetCompletionMode(InCompletionMode);
+}
+
+FOptionalMovieSceneBlendType UMovieSceneSectionBPFLib::GetBlendType(const UMovieSceneSection* Section)
+{
+	if (Section == nullptr) { return FOptionalMovieSceneBlendType(EMovieSceneBlendType::Invalid); }
+
+	return Section->GetBlendType();
+}
+
+void UMovieSceneSectionBPFLib::SetBlendType(UMovieSceneSection* Section, EMovieSceneBlendType InBlendType)
+{
+	if (Section == nullptr) { return; }
+
+	return Section->SetBlendType(InBlendType);
+}
+
+void UMovieSceneSectionBPFLib::GetSupportedBlendTypes(const UMovieSceneSection* Section, TArray<EMovieSceneBlendType>& SupportedBlendTypes)
+{
+	if (Section == nullptr) { return; }
+
+	FMovieSceneBlendTypeField Field = Section->GetSupportedBlendTypes();
+	TArray<EMovieSceneBlendType> Tests = {
+		EMovieSceneBlendType::Invalid,
+		EMovieSceneBlendType::Absolute,
+		EMovieSceneBlendType::Additive,
+		EMovieSceneBlendType::Relative,
+		EMovieSceneBlendType::AdditiveFromBase,
+	};
+	for (const EMovieSceneBlendType& Test : Tests)
+	{
+		if (Field.Contains(Test))
+		{
+			SupportedBlendTypes.Add(Test);
+		}
+	}
+}
+
+void UMovieSceneSectionBPFLib::MoveSection(UMovieSceneSection* Section, FFrameNumber DeltaTime)
+{
+	if (Section == nullptr) { return; }
+
+	return Section->MoveSection(DeltaTime);
+}
+
+//FSequencerScriptingRange UMovieSceneSectionBPFLib::ComputeEffectiveRange(UMovieSceneSection* Section)
+//{
+//	if (Section == nullptr) { TRange<FFrameNumber> Range = TRange<FFrameNumber>(0, 0); return FSequencerScriptingRange::FromNative(Range, FrameRate); }
+//
+//	return Section->ComputeEffectiveRange();
+//}
+
+UMovieSceneSection* UMovieSceneSectionBPFLib::SplitSection(UMovieSceneSection* Section, FQualifiedFrameTime SplitTime, bool bDeleteKeys)
+{
+	if (Section == nullptr) { return nullptr; }
+
+	return Section->SplitSection(SplitTime, bDeleteKeys);
+}
+
+void UMovieSceneSectionBPFLib::TrimSection(UMovieSceneSection* Section, FQualifiedFrameTime TrimTime, bool bTrimLeft, bool bDeleteKeys)
+{
+	if (Section == nullptr) { return; }
+
+	return Section->TrimSection(TrimTime, bTrimLeft, bDeleteKeys);
+}
+
+void UMovieSceneSectionBPFLib::GetSnapTimes(const UMovieSceneSection* Section, TArray<FFrameNumber>& OutSnapTimes, bool bGetSectionBorders)
+{
+	if (Section == nullptr) { return; }
+
+	return Section->GetSnapTimes(OutSnapTimes, bGetSectionBorders);
 }
